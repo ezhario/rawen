@@ -76,8 +76,9 @@ class MyFrame(wx.Frame):
 
     def on_open_folder(self, event):
         """Dialog function."""
+        print(event)
         title = "Choose a SD Card Root:"
-        dlg = wx.DirDialog(self, title, 
+        dlg = wx.DirDialog(self, title,
                            style=wx.DD_DEFAULT_STYLE)
         if dlg.ShowModal() == wx.ID_OK:
             self.count_files(dlg.GetPath())
@@ -85,6 +86,7 @@ class MyFrame(wx.Frame):
 
     def delete_raws(self, event):
         """This function deletes the files"""
+        print(event)
         self.result.SetLabel("Executing...")
         cwd = self.dcim_path
         jpg_pos = list(Path(cwd).rglob("*.[jJ][pP][gG]"))
