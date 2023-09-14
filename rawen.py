@@ -43,7 +43,7 @@ class MyFrame(wx.Frame):
         self.Show()
 
     def create_menu(self):
-        """Function should create a menu bar. But it doesn't."""
+        """This function creates a menu bar with one item."""
         menu_bar = wx.MenuBar()
         file_menu = wx.Menu()
         open_folder_menu_item = file_menu.Append(
