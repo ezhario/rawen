@@ -1,46 +1,53 @@
+"""Rawen is a simple app to remove unnecessary RAWs."""
 import os
 from pathlib import Path
 import wx
 
-class MyFrame(wx.Frame):    
+class MyFrame(wx.Frame):
+    """Main class with all the magic"""
+
     def __init__(self):
         super().__init__(parent=None, title='RAWEN')
-        
+
         self.dcim_path = ''
 
         self.panel = wx.Panel(self)
 
         my_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        my_sizer.AddSpacer(10);
+        my_sizer.AddSpacer(10)
 
         open_btn = wx.Button(self.panel, label='Open SD Card Root', pos=(5, 55))
         open_btn.Bind(wx.EVT_BUTTON, self.on_open_folder)
         my_sizer.Add(open_btn, 0, wx.ALL | wx.CENTER, 5)
 
-        self.result = wx.StaticText(self.panel, label="Please select a SD Card Root.", style=wx.ALIGN_CENTER| wx.ST_NO_AUTORESIZE)
+        self.result = wx.StaticText(self.panel, label="Please select a SD Card Root.",
+                                    style=wx.ALIGN_CENTER| wx.ST_NO_AUTORESIZE)
         my_sizer.Add(self.result, 0, wx.ALL | wx.EXPAND, 5)
 
         self.do_btn = wx.Button(self.panel, label='Do it.', pos=(5, 55))
         self.do_btn.Bind(wx.EVT_BUTTON, self.delete_raws)
         my_sizer.Add(self.do_btn, 0, wx.ALL | wx.CENTER, 5)
-        my_sizer.AddSpacer(10);
-        font = wx.Font(10, family = wx.FONTFAMILY_MODERN, style = 0, weight = 90, underline = False, faceName ="", encoding = wx.FONTENCODING_DEFAULT)
-        self.creds = wx.StaticText(self.panel, label="© ezhario, 2023. Inspired by ixtaccihuatl", style=wx.ALIGN_CENTER| wx.ST_NO_AUTORESIZE)
+        my_sizer.AddSpacer(10)
+        font = wx.Font(10, family = wx.FONTFAMILY_MODERN,
+                       style = 0, weight = 90, underline = False,
+                       faceName ="", encoding = wx.FONTENCODING_DEFAULT)
+        self.creds = wx.StaticText(self.panel, label="© ezhario, 2023. Inspired by ixtaccihuatl",
+                                   style=wx.ALIGN_CENTER| wx.ST_NO_AUTORESIZE)
         self.creds.SetFont(font)
         my_sizer.Add(self.creds, 0, wx.ALL | wx.EXPAND, 5)
         self.do_btn.Disable()
         self.panel.SetSizer(my_sizer)
-        
         self.create_menu()
         self.Centre()
         self.Show()
 
     def create_menu(self):
+        """Function should create a menu bar. But it doesn't."""
         menu_bar = wx.MenuBar()
         file_menu = wx.Menu()
         open_folder_menu_item = file_menu.Append(
-            wx.ID_ANY, 'Open SD Card', 
+            wx.ID_ANY, 'Open SD Card',
             'Open a root of SD Card'
         )
         menu_bar.Append(file_menu, '&File')
@@ -52,6 +59,7 @@ class MyFrame(wx.Frame):
         self.SetMenuBar(menu_bar)
 
     def count_files(self, folder_path):
+        """Function for counting folders."""
         print(folder_path)
         path = folder_path + '/DCIM'
         if os.path.exists(path):
@@ -59,13 +67,15 @@ class MyFrame(wx.Frame):
             self.dcim_path = path
             jpg_pos = len(list(Path(path).rglob("*.[jJ][pP][gG]")))
             raw_pos = len(list(Path(path).rglob("*.[aA][rR][wW]")))
-            self.result.SetLabel("JPGs: %s, RAWs: %s" % (jpg_pos, raw_pos))
+            label = f"JPGs: {jpg_pos}, RAWs: {raw_pos}"
+            self.result.SetLabel(label)
             self.do_btn.Enable()
         else:
             self.result.SetLabel("That's not an SD Card: no DCIM folder on it's root.")
 
 
     def on_open_folder(self, event):
+        """Dialog function."""
         title = "Choose a SD Card Root:"
         dlg = wx.DirDialog(self, title, 
                            style=wx.DD_DEFAULT_STYLE)
@@ -74,6 +84,7 @@ class MyFrame(wx.Frame):
         dlg.Destroy()
 
     def delete_raws(self, event):
+        """This function deletes the files"""
         self.result.SetLabel("Executing...")
         cwd = self.dcim_path
         jpg_pos = list(Path(cwd).rglob("*.[jJ][pP][gG]"))
@@ -84,7 +95,7 @@ class MyFrame(wx.Frame):
             for x in input_list:
                 result_list.append(x.as_posix())
             return result_list
-            
+
         def get_folder_list(input_list):
             output_list = []
             for x in get_file_list(input_list):
@@ -95,34 +106,34 @@ class MyFrame(wx.Frame):
             return output_list
 
         folder_dict = {}
-        for x in get_folder_list(jpg_pos):
-            folder_dict[x] = {}
-            folder_dict[x]['jpg'] = {}
+        for item in get_folder_list(jpg_pos):
+            folder_dict[item] = {}
+            folder_dict[item]['jpg'] = {}
             jpg_lst = []
-            for y in get_file_list(jpg_pos):
-                if x in y:
-                    if not "/." in y:
-                        jpg_lst.append(y)
-            folder_dict[x]['jpg'] = jpg_lst
+            for list_str in get_file_list(jpg_pos):
+                if item in list_str:
+                    if not "/." in list_str:
+                        jpg_lst.append(list_str)
+            folder_dict[item]['jpg'] = jpg_lst
             raw_lst = []
-            for y in get_file_list(raw_pos):
-                if x in y:
-                    if not "/." in y:
-                        raw_lst.append(y)
-            folder_dict[x]['raw'] = raw_lst
+            for list_str in get_file_list(raw_pos):
+                if item in list_str:
+                    if not "/." in list_str:
+                        raw_lst.append(list_str)
+            folder_dict[item]['raw'] = raw_lst
         print(folder_dict)
         deletion_list = []
         for folder, item in folder_dict.items():
             print('### FOLDER ###')
             print(folder, item)
             print(type(folder), type(item))
-            
+
             for raw_path in item['raw']:
                 flag = False
                 raw_file = raw_path[:-4].lower()
                 print('### RAW FILE ###')
                 print(raw_file)
-                
+
                 for jpg_path in item['jpg']:
                     jpg_file = jpg_path[:-4].lower()
                     print('raw: '+raw_file)
@@ -138,7 +149,8 @@ class MyFrame(wx.Frame):
             if os.path.isfile(item):
                 os.remove(item)
             else:
-                print("Error: %s file not found" % item)
+                msg = f"Error: {item} file not found"
+                print(msg)
                 errors = True
         if errors:
             self.result.SetLabel("There were some errors. You can try again.")
