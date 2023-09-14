@@ -1,7 +1,15 @@
+<p align="center">
+  <img src="https://images.plurk.com/6QOnj9PXofQKxSyrTgibNV.png" alt="App Icon"/>
+</p>
 # What's this?
 Rawen is an app written in Python with wxPython as GUI toolkit.
 Main and the only funtion is removing the redundant RAW files who don't 
 have corresponding JPG's from Camera SD Cards.
+
+<p align="center">
+  <img src="https://images.plurk.com/6cfoEnPk4kZSZd45321b4I.png" alt="App main (and only) window"/>
+  <text style="font-size: small">Godlike design</text>
+</p>
 
 Usage scenario:
 1. Make some photos
