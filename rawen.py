@@ -52,7 +52,7 @@ class MyFrame(wx.Frame):
         )
         menu_bar.Append(file_menu, '&File')
         self.Bind(
-            event=wx.EVT_MENU, 
+            event=wx.EVT_MENU,
             handler=self.on_open_folder,
             source=open_folder_menu_item,
         )
@@ -84,46 +84,46 @@ class MyFrame(wx.Frame):
             self.count_files(dlg.GetPath())
         dlg.Destroy()
 
-    def delete_raws(self, event):
-        """This function deletes the files"""
-        print(event)
-        self.result.SetLabel("Executing...")
-        cwd = self.dcim_path
-        jpg_pos = list(Path(cwd).rglob("*.[jJ][pP][gG]"))
-        raw_pos = list(Path(cwd).rglob("*.[aA][rR][wW]"))
+    def get_file_list(self, input_list):
+        """This function forms the file list"""
+        result_list = []
+        for path in input_list:
+            result_list.append(path.as_posix())
+        return result_list
 
-        def get_file_list(input_list):
-            result_list = []
-            for x in input_list:
-                result_list.append(x.as_posix())
-            return result_list
+    def get_folder_list(self, input_list):
+        """This function forms the folder list"""
+        output_list = []
+        list_of_paths = self.get_file_list(input_list)
+        for path in list_of_paths:
+            fpath = path.rsplit('/',1)[0]
+            folder_name = fpath.rsplit('/',1)[1]
+            if folder_name not in output_list:
+                output_list.append(folder_name)
+        return output_list
 
-        def get_folder_list(input_list):
-            output_list = []
-            for x in get_file_list(input_list):
-                fpath = x.rsplit('/',1)[0]
-                folder_name = fpath.rsplit('/',1)[1]
-                if folder_name not in output_list:
-                    output_list.append(folder_name)
-            return output_list
-
+    def provide_folder_dict(self, jpg, raw):
+        """This function provides folders as a dict"""
         folder_dict = {}
-        for item in get_folder_list(jpg_pos):
+        for item in self.get_folder_list(jpg):
             folder_dict[item] = {}
             folder_dict[item]['jpg'] = {}
             jpg_lst = []
-            for list_str in get_file_list(jpg_pos):
+            for list_str in self.get_file_list(jpg):
                 if item in list_str:
                     if not "/." in list_str:
                         jpg_lst.append(list_str)
             folder_dict[item]['jpg'] = jpg_lst
             raw_lst = []
-            for list_str in get_file_list(raw_pos):
+            for list_str in self.get_file_list(raw):
                 if item in list_str:
                     if not "/." in list_str:
                         raw_lst.append(list_str)
             folder_dict[item]['raw'] = raw_lst
-        print(folder_dict)
+        return folder_dict
+
+    def form_deletion_list(self, folder_dict):
+        """This funtion forms list of files to be deleted"""
         deletion_list = []
         for folder, item in folder_dict.items():
             print('### FOLDER ###')
@@ -146,6 +146,19 @@ class MyFrame(wx.Frame):
                 if not flag:
                     print('oh no, it goes to bin: '+raw_path)
                     deletion_list.append(raw_path)
+        return deletion_list
+
+    def delete_raws(self, event):
+        """This function deletes the files"""
+        print(event)
+        self.result.SetLabel("Executing...")
+        cwd = self.dcim_path
+        jpg_pos = list(Path(cwd).rglob("*.[jJ][pP][gG]"))
+        raw_pos = list(Path(cwd).rglob("*.[aA][rR][wW]"))
+
+        folder_dict = self.provide_folder_dict(jpg_pos, raw_pos)
+
+        deletion_list = self.form_deletion_list(folder_dict)
         errors = False
         for item in deletion_list:
             if os.path.isfile(item):
