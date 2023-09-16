@@ -9,6 +9,7 @@ The main and the only function is removing unnecessary RAW files matching JPEG's
   <img width="512" height="362" src="https://images.plurk.com/6cfoEnPk4kZSZd45321b4I.png" alt="App main (and only) window"/>
 </p>
 Usage scenario:
+
 1. Make some photos
 2. Extract the SD Card from your Camera and insert it to your Mac
 3. Check the JPGs with Preview and remove the photos you don't like
