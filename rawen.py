@@ -9,6 +9,8 @@ class MyFrame(wx.Frame):
     def __init__(self):
         super().__init__(parent=None, title='RAWEN')
 
+        self.no_sd = False
+
         self.dcim_path = ''
 
         self.panel = wx.Panel(self)
@@ -24,6 +26,14 @@ class MyFrame(wx.Frame):
         self.result = wx.StaticText(self.panel, label="Please select a SD Card Root.",
                                     style=wx.ALIGN_CENTER| wx.ST_NO_AUTORESIZE)
         my_sizer.Add(self.result, 0, wx.ALL | wx.EXPAND, 5)
+
+        open_btn = wx.Button(self.panel, label='Open Folder', pos=(5, 55))
+        open_btn.Bind(wx.EVT_BUTTON, self.on_open_folder_custom)
+        my_sizer.Add(open_btn, 0, wx.ALL | wx.CENTER, 5)
+
+        self.result_no_sd = wx.StaticText(self.panel, label="...or just open a folder.",
+                                    style=wx.ALIGN_CENTER| wx.ST_NO_AUTORESIZE)
+        my_sizer.Add(self.result_no_sd, 0, wx.ALL | wx.EXPAND, 5)
 
         self.do_btn = wx.Button(self.panel, label='Do it.', pos=(5, 55))
         self.do_btn.Bind(wx.EVT_BUTTON, self.delete_raws)
@@ -58,20 +68,31 @@ class MyFrame(wx.Frame):
         )
         self.SetMenuBar(menu_bar)
 
-    def count_files(self, folder_path):
+    def count_files(self, folder_path, not_sd):
         """Function for counting folders."""
         print(folder_path)
-        path = folder_path + '/DCIM'
-        if os.path.exists(path):
-            self.result.SetLabel("Counting...")
-            self.dcim_path = path
-            jpg_pos = len(list(Path(path).rglob("*.[jJ][pP][gG]")))
-            raw_pos = len(list(Path(path).rglob("*.[aA][rR][wW]")))
-            label = f"JPGs: {jpg_pos}, RAWs: {raw_pos}"
-            self.result.SetLabel(label)
-            self.do_btn.Enable()
+        if not_sd:
+            if os.path.exists(folder_path):
+                # TODO: check that's not an SD Card
+                self.result_no_sd.SetLabel("Counting...")
+                self.dcim_path = folder_path
+                jpg_pos = len(list(Path(folder_path).rglob("*.[jJ][pP][gG]")))
+                raw_pos = len(list(Path(folder_path).rglob("*.[aA][rR][wW]")))
+                label = f"JPGs: {jpg_pos}, RAWs: {raw_pos}"
+                self.result_no_sd.SetLabel(label)
+                self.do_btn.Enable()
         else:
-            self.result.SetLabel("That's not an SD Card: no DCIM folder on it's root.")
+            path = folder_path + '/DCIM'
+            if os.path.exists(path):
+                self.result.SetLabel("Counting...")
+                self.dcim_path = path
+                jpg_pos = len(list(Path(path).rglob("*.[jJ][pP][gG]")))
+                raw_pos = len(list(Path(path).rglob("*.[aA][rR][wW]")))
+                label = f"JPGs: {jpg_pos}, RAWs: {raw_pos}"
+                self.result.SetLabel(label)
+                self.do_btn.Enable()
+            else:
+                self.result.SetLabel("That's not an SD Card: no DCIM folder on it's root.")
 
 
     def on_open_folder(self, event):
@@ -81,8 +102,20 @@ class MyFrame(wx.Frame):
         dlg = wx.DirDialog(self, title,
                            style=wx.DD_DEFAULT_STYLE)
         if dlg.ShowModal() == wx.ID_OK:
-            self.count_files(dlg.GetPath())
+            self.count_files(dlg.GetPath(), False)
         dlg.Destroy()
+        self.no_sd = False
+
+    def on_open_folder_custom(self, event):
+        """Dialog function to open custom folder."""
+        print(event)
+        title = "Choose a folder with images:"
+        dlg = wx.DirDialog(self, title,
+                           style=wx.DD_DEFAULT_STYLE)
+        if dlg.ShowModal() == wx.ID_OK:
+            self.count_files(dlg.GetPath(), True)
+        dlg.Destroy()
+        self.no_sd = True
 
     def get_file_list(self, input_list):
         """This function forms the file list"""
@@ -151,7 +184,10 @@ class MyFrame(wx.Frame):
     def delete_raws(self, event):
         """This function deletes the files"""
         print(event)
-        self.result.SetLabel("Executing...")
+        if self.no_sd:
+            self.result_no_sd.SetLabel("Executing...")
+        else:
+            self.result.SetLabel("Executing...")
         cwd = self.dcim_path
         jpg_pos = list(Path(cwd).rglob("*.[jJ][pP][gG]"))
         raw_pos = list(Path(cwd).rglob("*.[aA][rR][wW]"))
@@ -162,16 +198,23 @@ class MyFrame(wx.Frame):
         errors = False
         for item in deletion_list:
             if os.path.isfile(item):
+                # TODO: Adopt this (https://apple.stackexchange.com/a/162354) instead
                 os.remove(item)
             else:
                 msg = f"Error: {item} file not found"
                 print(msg)
                 errors = True
         if errors:
-            self.result.SetLabel("There were some errors. You can try again.")
+            if self.no_sd:
+                self.result_no_sd.SetLabel("There were some errors. You can try again.")
+            else:
+                self.result.SetLabel("There were some errors. You can try again.")
             self.do_btn.Disable()
         else:
-            self.result.SetLabel("Done.")
+            if self.no_sd:
+                self.result_no_sd.SetLabel("Done.")
+            else:
+                self.result.SetLabel("Done.")
             self.do_btn.Disable()
 
 if __name__ == '__main__':
