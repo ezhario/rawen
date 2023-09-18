@@ -1,9 +1,15 @@
+<p align="center">
+  <img width="99" height="125" src="https://images.plurk.com/6QOnj9PXofQKxSyrTgibNV.png" alt="App Icon"/>
+</p>
+
 # What's this?
 Rawen is an app written in Python with wxPython as GUI toolkit.
-Main and the only funtion is removing the redundant RAW files who don't 
-have corresponding JPG's from Camera SD Cards.
-
+The main and the only function is removing unnecessary RAW files matching JPEG's that were removed from photo camera SD Cards as takeaways from RAW+JPEG folder.
+<p align="center">
+  <img width="512" height="362" src="https://images.plurk.com/6cfoEnPk4kZSZd45321b4I.png" alt="App main (and only) window"/>
+</p>
 Usage scenario:
+
 1. Make some photos
 2. Extract the SD Card from your Camera and insert it to your Mac
 3. Check the JPGs with Preview and remove the photos you don't like
